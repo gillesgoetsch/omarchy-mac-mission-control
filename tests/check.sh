@@ -10,6 +10,7 @@ luac -p "$REPO/hypr/mac-mission-control.lua" && ok "lua syntax" || bad "lua synt
 jq -e '.id and .entryPoints.overlay' "$REPO/manifest.json" >/dev/null && ok "manifest" || bad "manifest"
 [ -f "$REPO/$(jq -r .entryPoints.overlay "$REPO/manifest.json")" ] && ok "entry point exists" || bad "entry point missing"
 if grep -nE 'font\.pixelSize: *[0-9]+\.[0-9]' "$REPO/MissionControl.qml"; then bad "fractional font.pixelSize (an int: the plugin would not load)"; else ok "no fractional pixel sizes"; fi
+if grep -nE '(^|[^A-Za-z0-9_.$])Color *\. *[A-Za-z_]' "$REPO/MissionControl.qml"; then bad "a bare Color (Qt 6.12's QtQuick has a Color of its own: write Commons.Color)"; else ok "colours through Commons.Color"; fi
 if grep -nE ':remove\(\)|:unbind\(\)' "$REPO/hypr/mac-mission-control.lua" | grep -v '^\S*--'; then bad "a keybind or event handle is removed (crashes Hyprland 0.56, see docs/DEVELOPING.md)"; else ok "no handle is removed"; fi
 if [ -x /usr/lib/qt6/bin/qmllint ]; then
   if /usr/lib/qt6/bin/qmllint -I /usr/lib/qt6/qml "$REPO/MissionControl.qml" 2>&1 | grep -qiE "syntax|expected token"; then bad "qml syntax"; else ok "qml syntax"; fi

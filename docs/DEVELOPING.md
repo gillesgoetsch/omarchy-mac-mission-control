@@ -225,6 +225,13 @@ Checked by capturing the real desktop, then the overview held at progress 0
    is working on, and screenshots capture what they are doing. Ask first,
    delete captures right after.
 
+10. **Write `Commons.Color`, never a bare `Color`.** Qt 6.12's QtQuick has a
+    `Color` singleton of its own, and under a plain `import QtQuick` a bare
+    `Color` is that one, whatever the order of the imports: every colour of
+    Omarchy's (`Color.background`, `Color.accent`, ...) is then undefined.
+    `import qs.Commons as Commons` and `Commons.Color.x` reach Omarchy's on
+    every Qt; `tests/check.sh` greps for a bare one.
+
 ## Debugging
 
 ```sh
