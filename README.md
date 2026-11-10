@@ -103,6 +103,10 @@ mac_mission_control_config = {
 }
 ```
 
+**The Mission Control key.** On a Mac running Linux the key is `XF86LaunchA`,
+which is bound by default. In a virtual machine on a Mac it can arrive as a
+plain `F3` instead; add `"F3"` to `keys` then.
+
 **Sideways paging.** A finger count and direction can have only one gesture in
 Hyprland. While the overview is open the plugin borrows your workspace swipe
 and gives it back afterwards. It does so when `~/.config/hypr/input.lua`
