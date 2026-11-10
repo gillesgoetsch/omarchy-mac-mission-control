@@ -5,6 +5,7 @@ import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Effects
 import qs.Commons
+import qs.Commons as Commons
 import "Layout.js" as Layout
 
 // Mission Control: the workspace's windows spread out so that none overlaps,
@@ -1161,7 +1162,7 @@ Item {
                 y: thumb.border + thumb.barHeight
                 width: thumb.g.w
                 height: thumb.g.h
-                color: Color.background
+                color: Commons.Color.background
                 visible: !view.hasContent && root.hiddenAck
               }
 
@@ -1225,7 +1226,7 @@ Item {
                 anchors.margins: -t
                 visible: thumb.hovered
                 color: "transparent"
-                border.color: Color.accent
+                border.color: Commons.Color.accent
                 border.width: t
                 radius: root.deco.rounding / Math.max(0.05, thumb.scale)   // as the windows: square unless Hyprland rounds them
               }
@@ -1394,13 +1395,13 @@ Item {
             }
             Rectangle {
               anchors.fill: parent
-              color: Util.alpha(Color.background, 0.5)
+              color: Util.alpha(Commons.Color.background, 0.5)
             }
             Rectangle {
               anchors.bottom: parent.bottom
               width: parent.width
               height: 1
-              color: Util.alpha(Color.foreground, 0.14)
+              color: Util.alpha(Commons.Color.foreground, 0.14)
             }
           }
           MouseArea { anchors.fill: parent }   // the strip itself does nothing
@@ -1474,7 +1475,7 @@ Item {
                   width: entry.width
                   height: bar.previewH
                   radius: 0   // a desktop is a screen: square corners
-                  color: entry.isNew ? Util.alpha(Color.foreground, entryMouse.containsMouse || entry.dropHere ? 0.22 : 0.1) : "#101010"
+                  color: entry.isNew ? Util.alpha(Commons.Color.foreground, entryMouse.containsMouse || entry.dropHere ? 0.22 : 0.1) : "#101010"
                   scale: entry.dropHere ? 1.06 : 1
                   Behavior on scale { NumberAnimation { duration: Style.duration(120); easing.type: Easing.OutCubic } }
 
@@ -1528,7 +1529,7 @@ Item {
                     anchors.centerIn: parent
                     textFormat: Text.PlainText
                     text: "+"
-                    color: Color.foreground
+                    color: Commons.Color.foreground
                     opacity: 0.85
                     font.pixelSize: 26
                   }
@@ -1540,7 +1541,7 @@ Item {
                     color: "transparent"
                     visible: !entry.isNew && (entry.current || entryMouse.containsMouse || entry.dropHere)
                     border.width: 2
-                    border.color: entry.dropHere ? Color.accent : Util.alpha(Color.foreground, entry.current ? 1 : 0.45)
+                    border.color: entry.dropHere ? Commons.Color.accent : Util.alpha(Commons.Color.foreground, entry.current ? 1 : 0.45)
                   }
                 }
 
@@ -1553,7 +1554,7 @@ Item {
                   readonly property int number: panel.mon && panel.mon.renumber ? entry.index + 1
                                                                                  : entry.modelData - root.blockOf(entry.modelData)
                   text: number === 10 ? "0" : String(number)
-                  color: Color.foreground
+                  color: Commons.Color.foreground
                   opacity: entry.current || entryMouse.containsMouse ? 1 : 0.65
                   font.family: Style.font.menuFamily
                   font.pixelSize: 12
