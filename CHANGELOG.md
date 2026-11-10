@@ -4,6 +4,9 @@
 
 - Swiping the overview shut with the pointer on a window brings that window
   to the front and focuses it.
+- Colours show on Qt 6.12: its QtQuick has a `Color` of its own, which
+  hid Omarchy's (window placeholders, the hover frame, the desktops bar).
+- The README says that the Mission Control key can arrive as `F3` in a VM.
 
 ## 1.0.0 (2026-11-10)
 
