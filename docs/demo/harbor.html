@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Harbor · tidepool</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;font:13.5px/1.5 Inter,"Segoe UI",system-ui,sans-serif;color:#cfd3da;background:#0f1115}
+.app{display:grid;grid-template-columns:270px 1fr 38%;height:100%}
+.side{background:#14171c;border-right:1px solid #232830;padding:14px 12px;overflow:hidden}
+.brand{font-weight:700;color:#fff;font-size:15px;margin:0 6px 14px}.brand i{color:#f59e0b;font-style:normal}
+h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#7d8590;margin:16px 6px 6px}
+.wt{border:1px solid #232830;border-radius:8px;padding:8px 10px;margin:6px 0;background:#171b21}.wt.on{border-color:#f59e0b;background:#1d1a12}
+.wt b{color:#fff}.wt small{display:block;color:#7d8590}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px}
+.main{display:flex;flex-direction:column;min-width:0;border-right:1px solid #232830}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #232830;padding:8px 10px 0}.tab{padding:7px 14px;border-radius:7px 7px 0 0;color:#7d8590}.tab.on{background:#171b21;color:#fff}
+.log{flex:1;padding:14px 18px;font:12.8px/1.65 "JetBrains Mono",ui-monospace,monospace;overflow:hidden}
+.u{color:#fff;background:#171b21;border-left:3px solid #f59e0b;padding:6px 10px;margin:0 0 10px;font-family:Inter,system-ui,sans-serif}
+.t{color:#7d8590}.ok{color:#4ade80}.w{color:#fbbf24}.k{color:#93c5fd}
+.in{margin:0 18px 16px;border:1px solid #2b313a;border-radius:9px;padding:11px 13px;color:#5f6772}
+.diff{padding:12px 0;font:12.5px/1.6 "JetBrains Mono",ui-monospace,monospace;overflow:hidden}
+.f{padding:6px 16px;color:#fff;background:#14171c;border-bottom:1px solid #232830;border-top:1px solid #232830;font-family:Inter,system-ui,sans-serif}
+.l{padding:0 16px;white-space:pre}.a{background:#0f2a1a;color:#86efac}.d{background:#2a1215;color:#fca5a5}.c{color:#7d8590}
+</style></head><body><div class="app">
+<div class="side"><div class="brand"><i>⚓</i> Harbor</div>
+<h2>tidepool</h2>
+<div class="wt on"><b><span class="dot" style="background:#4ade80"></span>overview-gesture</b><small>agent working · 3 files changed</small></div>
+<div class="wt"><b><span class="dot" style="background:#fbbf24"></span>fix/layout-rows</b><small>waiting for review</small></div>
+<div class="wt"><b><span class="dot" style="background:#64748b"></span>main</b><small>up to date</small></div>
+<h2>lighthouse-api</h2>
+<div class="wt"><b><span class="dot" style="background:#4ade80"></span>feature/rate-limits</b><small>tests running · 212 passed</small></div>
+<div class="wt"><b><span class="dot" style="background:#64748b"></span>main</b><small>2 commits behind</small></div>
+<h2>atlas-docs</h2>
+<div class="wt"><b><span class="dot" style="background:#64748b"></span>main</b><small>idle</small></div></div>
+<div class="main"><div class="tabs"><div class="tab on">Agent</div><div class="tab">Terminal</div><div class="tab">Tests</div></div>
+<div class="log"><div class="u">Make the overview follow the trackpad instead of playing a fixed animation.</div>
+<div class="t">● Read layout.js, overview.qml</div>
+<div>The gesture already reports every finger movement. I'll drive the</div>
+<div>progress from those deltas and hand over to a spring on release.</div>
+<br><div class="t">● Edit overview.qml</div>
+<div class="ok">  ✓ progress follows the swipe 1:1</div>
+<div class="ok">  ✓ a flick decides the direction, otherwise the halfway point</div>
+<div class="ok">  ✓ critically damped spring, no bounce</div>
+<br><div class="t">● Run tests/layout.test.js</div>
+<div><span class="k">ok</span>   cascade of 7: scale 0.530, 3.2 ms</div>
+<div><span class="k">ok</span>   8 overlapping browsers: scale 0.474, 0.3 ms</div>
+<div><span class="k">ok</span>   20 random: scale 0.378, 1.7 ms</div>
+<br><div class="w">◐ Recording the opening at 120 fps to check for dropped frames…</div></div>
+<div class="in">Ask the agent, or type / for commands</div></div>
+<div class="diff"><div class="f">overview.qml  <span style="color:#4ade80">+14</span> <span style="color:#f87171">−6</span></div>
+<div class="l c">@@ function gestureUpdate(dy, time) @@</div>
+<div class="l d">-  progress = target</div>
+<div class="l d">-  animation.restart()</div>
+<div class="l a">+  var step = -dy / travel</div>
+<div class="l a">+  raw = clamp(raw + step, 0, 1.25)</div>
+<div class="l a">+  samples.push({ t: time, v: raw })</div>
+<div class="l c"> </div>
+<div class="l c">@@ function gestureEnd() @@</div>
+<div class="l a">+  var velocity = sampledVelocity()</div>
+<div class="l a">+  var target = Math.abs(velocity) > flick</div>
+<div class="l a">+             ? (velocity > 0 ? 1 : 0)</div>
+<div class="l a">+             : (raw > commit ? 1 : 0)</div>
+<div class="l a">+  settle(target, velocity)</div>
+<div class="f" style="margin-top:14px">layout.js  <span style="color:#4ade80">+31</span> <span style="color:#f87171">−2</span></div>
+<div class="l c">@@ function arrange(frames, screen, area) @@</div>
+<div class="l a">+  var a = natural(frames, screen, area, gap)</div>
+<div class="l a">+  a = grow(frames, a, area, gap)</div>
+<div class="l a">+  var b = rows(frames, area, gap)</div>
+<div class="l a">+  if (b.scale > a.scale * 1.1) return b.slots</div>
+<div class="l c">   return centred(frames, a.slots, area)</div></div>
+</div></body></html>

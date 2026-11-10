@@ -1,0 +1,13 @@
+name: check
+on: [push, pull_request]
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y lua5.4 jq
+      - run: sudo ln -sf "$(command -v luac5.4)" /usr/local/bin/luac
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: tests/check.sh --static

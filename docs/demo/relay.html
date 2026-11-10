@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Relay · Northwind Labs</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;font:14px/1.45 Inter,"Segoe UI",system-ui,sans-serif;color:#d7dae0;background:#1a1d21}
+.app{display:grid;grid-template-columns:64px 250px 1fr;height:100%}
+.rail{background:#121417;padding:12px 0;display:flex;flex-direction:column;align-items:center;gap:12px}
+.ws{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-weight:700;color:#fff}
+.side{background:#1f2328;border-right:1px solid #2c3138;padding:14px 10px;overflow:hidden}
+.side h1{font-size:16px;margin:2px 8px 14px;color:#fff}.side h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#8b929c;margin:16px 8px 6px}
+.ch{padding:4px 8px;border-radius:6px;color:#aeb4bd;white-space:nowrap}.ch.on{background:#2f6fde;color:#fff}.ch b{color:#fff}
+.badge{float:right;background:#e5484d;color:#fff;border-radius:9px;font-size:11px;padding:0 6px}
+.main{display:flex;flex-direction:column;min-width:0}
+.top{padding:12px 20px;border-bottom:1px solid #2c3138;font-weight:700;color:#fff}.top span{font-weight:400;color:#8b929c;margin-left:10px}
+.log{flex:1;padding:8px 20px;overflow:hidden}
+.msg{display:grid;grid-template-columns:40px 1fr;gap:12px;padding:9px 0}
+.av{width:38px;height:38px;border-radius:8px;display:grid;place-items:center;font-weight:700;color:#fff}
+.who{font-weight:700;color:#fff}.who small{font-weight:400;color:#8b929c;margin-left:8px}
+pre{background:#121417;border:1px solid #2c3138;border-radius:6px;padding:10px 12px;margin:8px 0 0;color:#b8e0c2;font:12.5px/1.5 "JetBrains Mono",ui-monospace,monospace;overflow:hidden}
+.re{display:inline-block;background:#262b31;border:1px solid #343a42;border-radius:12px;padding:1px 9px;margin:6px 6px 0 0;font-size:12.5px}
+.day{text-align:center;color:#8b929c;font-size:12px;margin:8px 0;border-top:1px solid #2c3138;padding-top:8px}
+.box{margin:0 20px 18px;border:1px solid #3a4048;border-radius:10px;padding:12px 14px;color:#6f7782}
+a{color:#6ea8fe;text-decoration:none}
+</style></head><body><div class="app">
+<div class="rail"><div class="ws" style="background:#2f6fde">N</div><div class="ws" style="background:#3a7d5c">T</div><div class="ws" style="background:#7a4bc4">A</div></div>
+<div class="side"><h1>Northwind Labs</h1>
+<h2>Channels</h2><div class="ch"># general</div><div class="ch on"># compositor</div><div class="ch"><b># launch-week</b><span class="badge">4</span></div><div class="ch"># design-review</div><div class="ch"># infra</div><div class="ch"># releases</div><div class="ch"># random</div>
+<h2>Direct messages</h2><div class="ch">● Maya Okafor</div><div class="ch">● Jonas Weber</div><div class="ch"><b>○ Priya Nair</b><span class="badge">1</span></div><div class="ch">○ Tom Lindqvist</div><div class="ch">○ Ines Carvalho</div></div>
+<div class="main"><div class="top"># compositor<span>Window management, gestures, overview · 14 members</span></div>
+<div class="log">
+<div class="msg"><div class="av" style="background:#c2410c">MO</div><div><div class="who">Maya Okafor<small>10:02</small></div>The overview now follows the swipe the whole way. No more waiting for an animation to finish before you can change your mind.<div><span class="re">🚀 5</span><span class="re">👀 2</span></div></div></div>
+<div class="msg"><div class="av" style="background:#0f766e">JW</div><div><div class="who">Jonas Weber<small>10:05</small></div>Does it keep relative positions? The grid layouts always lose me.</div></div>
+<div class="msg"><div class="av" style="background:#c2410c">MO</div><div><div class="who">Maya Okafor<small>10:06</small></div>Yes. Windows are pushed apart until nothing overlaps and then share one scale:<pre>spread(frames, screen)  -> push overlapping pairs apart
+grow(layout, area)      -> largest common scale that still fits
+rows(frames, area)      -> fallback for piles and cascades</pre></div></div>
+<div class="msg"><div class="av" style="background:#6d28d9">PN</div><div><div class="who">Priya Nair<small>10:11</small></div>Dragging a window onto another desktop feels right now. It shrinks, flies into the preview and lands in front.<div><span class="re">✨ 3</span></div></div></div>
+<div class="day">Today</div>
+<div class="msg"><div class="av" style="background:#1d4ed8">TL</div><div><div class="who">Tom Lindqvist<small>09:14</small></div>Release notes are in <a>#releases</a>. Four fingers sideways pages through the desktops while the overview stays up.</div></div>
+<div class="msg"><div class="av" style="background:#0f766e">JW</div><div><div class="who">Jonas Weber<small>09:20</small></div>Shipping it. 🎉</div></div>
+</div><div class="box">Message #compositor</div></div></div></body></html>
