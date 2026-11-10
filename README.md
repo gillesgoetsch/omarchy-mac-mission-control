@@ -69,7 +69,7 @@ Update with `omarchy plugin update mac.missioncontrol`, remove with
 | Input | Does |
 |---|---|
 | 4 fingers up | open, following the fingers |
-| 4 fingers down | close, the same way |
+| 4 fingers down | close, the same way; with the pointer on a window, into that window |
 | 4 fingers left / right, while open | the next / previous desktop |
 | `Ctrl` + `↑`, Mission Control key (`F3`) | toggle |
 | click a window | switch to it |

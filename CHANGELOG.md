@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1 (2026-11-10)
+
+- Swiping the overview shut with the pointer on a window brings that window
+  to the front and focuses it.
+
 ## 1.0.0 (2026-11-10)
 
 First release.

@@ -99,6 +99,7 @@ Item {
   property var afterClose: null
   property bool ignoreGesture: false
   property int gestureFrom: 0        // where the swipe started: 0 closed, 1 open
+  property string gestureHover: ""   // the window under the pointer when a closing swipe began
   property real gestureRaw: 0
   property var samples: []
   property var timing: ({})
@@ -529,6 +530,10 @@ Item {
       root.ignoreGesture = true
       return
     }
+    // Swiping it shut with the pointer on a window: that window comes to the
+    // front as they all return, and is the one you land in.
+    root.gestureHover = root.phase === "open" && !root.gone[root.hoverAddress] ? root.hoverAddress : ""
+    if (root.gestureHover) root.raised = root.gestureHover
     root.grabKeys = false
     root.phase = "tracking"
     root.gestureFrom = root.raw > 0.5 ? 1 : 0
@@ -569,6 +574,11 @@ Item {
     if (Math.abs(velocity) > root.flick) target = velocity > 0 ? 1 : 0
     else if (root.gestureFrom === 0) target = root.raw > root.commit ? 1 : 0
     else target = root.raw < 1 - root.commit ? 0 : 1
+    if (root.gestureHover) {
+      if (target === 0) root.pick(root.gestureHover)
+      else root.raised = ""
+      root.gestureHover = ""
+    }
     root.settle(target, velocity)
   }
 
@@ -727,11 +737,11 @@ Item {
 
   // ------------------------------------------------------------ actions
 
-  function activate(address) {
-    if (!root.interactive) return
+  // The window to come out of the overview in: in front here at once, and
+  // focused and raised in Hyprland.
+  function pick(address) {
     root.raised = address
     root.activeAddress = address
-    root.grabKeys = false
     var lua = "mac_mission_control.activate('" + address + "')"
     // Now, under cover, so the window is in front when the copies land on it
     // (a moment later: Hyprland refuses focus while the overlay holds the
@@ -740,6 +750,12 @@ Item {
     activateDelay.lua = lua
     activateDelay.restart()
     root.afterClose = function() { root.hypr(lua) }
+  }
+
+  function activate(address) {
+    if (!root.interactive) return
+    root.grabKeys = false
+    root.pick(address)
     root.settle(0, 0)
   }
 
