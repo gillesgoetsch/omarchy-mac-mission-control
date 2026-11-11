@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.3 (2026-11-11)
+
+- With several monitors, the overview on every monitor takes the pointer: its
+  windows and desktops can be hovered, clicked and dragged, not only those of
+  the monitor it was opened on. The overlay no longer takes the keyboard
+  exclusively, which made Hyprland send all pointer input to that one monitor's
+  overlay; `Esc` is now a bind of the overview's submap, and other keys stop
+  there instead of reaching the hidden window that has the focus.
+
 ## 1.0.2 (2026-11-11)
 
 - A Hyprland config reload while the overview is open no longer leaves
