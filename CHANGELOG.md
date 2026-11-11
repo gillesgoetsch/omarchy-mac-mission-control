@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.5 (2026-11-11)
+
+- Picking a window, a desktop or `Super` + `1`…`0` in the overview leaves the
+  pointer where it is. Hyprland warped it to the focused window (or the
+  middle of the monitor) unless `cursor.no_warps` was on; warping is now off
+  for those focus changes, and the user's setting is put back right after.
+
 ## 1.0.4 (2026-11-11)
 
 - With several monitors, a window can be dragged onto a desktop of another
