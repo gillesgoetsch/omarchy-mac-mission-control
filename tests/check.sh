@@ -21,8 +21,10 @@ if [ -x /usr/lib/qt6/bin/qsb ] || [ -n "${CHECK_SHADER:-}" ]; then
 fi
 lua="$(command -v lua5.4 || command -v lua || true)"
 if [ -n "$lua" ]; then
-  HOME="$(mktemp -d)" XDG_RUNTIME_DIR="" "$lua" "$REPO/tests/submap.test.lua" | sed 's/^/      /'
-  [ "${PIPESTATUS[0]}" -eq 0 ] && ok "submap: entered and left, also after a config reload" || bad "submap"
+  t="$(mktemp -d)"
+  HOME="$t" XDG_RUNTIME_DIR="" "$lua" "$REPO/tests/submap.test.lua" | sed 's/^/      /'
+  s="${PIPESTATUS[0]}"; rm -rf "$t"
+  [ "$s" -eq 0 ] && ok "submap: entered and left, also after a config reload" || bad "submap"
 else echo "skip  submap (no lua)"; fi
 node="$(mise which node 2>/dev/null || command -v node)"
 if [ -n "$node" ]; then "$node" "$REPO/tests/layout.test.js" | sed 's/^/      /'; [ "${PIPESTATUS[0]}" -eq 0 ] && ok "layout: no overlaps, inside the area" || bad "layout"; else echo "skip  layout (no node)"; fi
