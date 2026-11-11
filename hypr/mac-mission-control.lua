@@ -574,7 +574,7 @@ end
 -- bind on that key, the user's own included, and segfaults the compositor on
 -- a handle whose bind is already gone. So the hooks stay and call whichever
 -- load of this file is live; one that is switched off makes them do nothing.
-local HOOKS = 1 -- raise when the hooks themselves change: an older set then needs a config reload
+local HOOKS = 2 -- raise when the hooks themselves change: an older set then needs a config reload
 if mac_mission_control_hooks == nil then
   mac_mission_control_hooks = HOOKS
 
@@ -619,6 +619,11 @@ if mac_mission_control_hooks == nil then
       hl.bind("SUPER + code:" .. tostring(n + 9), function() call("desktop", n) end,
         { description = "Mission Control: desktop " .. n })
     end
+    -- The overview never takes the keyboard (an exclusive layer would keep the
+    -- pointer on its own monitor), so Escape is a bind too, and every other key
+    -- stops here instead of reaching the hidden window that has the focus.
+    hl.bind("Escape", function() call("key", "esc") end, { description = "Mission Control: leave" })
+    hl.bind("catchall", function() end, { description = "Mission Control: other keys do nothing" })
   end)
 
   -- The hidden windows. (Opacity changes are instant: Omarchy keeps the

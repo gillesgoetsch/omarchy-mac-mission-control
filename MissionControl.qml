@@ -229,7 +229,8 @@ Item {
       else if (f[1] === "e") root.pageEnd()
       break
     case "ws": root.enterSpace(f[1], Number(f[2])); break
-    case "key":   // SUPER or CTRL + W / Q: the window under the pointer, as those keys do to the focused one
+    case "key":   // Escape; SUPER or CTRL + W / Q: the window under the pointer, as those keys do to the focused one
+      if (f[1] === "esc") { if (root.grabKeys) root.close(); break }
       if (!root.interactive || !root.hoverAddress || root.gone[root.hoverAddress]) break
       root.hypr("mac_mission_control." + (f[1] === "q" ? "quit" : "close") + "('" + root.hoverAddress + "')")
       break
@@ -966,13 +967,14 @@ Item {
       exclusionMode: ExclusionMode.Ignore
       WlrLayershell.namespace: "mac-mission-control"
       WlrLayershell.layer: WlrLayer.Overlay
-      WlrLayershell.keyboardFocus: root.grabKeys && mon && mon.focused ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+      // Never the keyboard: Hyprland keeps the pointer on the monitor of an
+      // exclusive layer, so the other monitors' overviews could not be reached.
+      // The keys are binds in the overview's submap (mac-mission-control.lua).
+      WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
       Item {
         id: stage
         anchors.fill: parent
-        focus: true
-        Keys.onEscapePressed: root.close()
 
         // The wallpaper dims below the desktops bar.
         Rectangle {

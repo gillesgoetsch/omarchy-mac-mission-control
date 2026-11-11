@@ -149,8 +149,14 @@ instead of it. So the Lua enters the submap `mac-mission-control` with the
 first `layer.opened` and leaves it with the last `layer.closed`: in it those
 keys (and their `CTRL` twins) send `key,q` / `key,w`, the shell answers with
 `quit(address)` / `close(address)` for the window under the pointer, and the
-toggle keys and `SUPER + 1..0` are bound again. Unbound keys reach the overlay
-(`ESC`). A config reload keeps Hyprland in the submap but starts the Lua afresh,
+toggle keys and `SUPER + 1..0` are bound again. `Escape` is a bind as well
+(`key,esc`), and a `catchall` bind swallows every other key so that typing
+cannot reach the hidden window that still has the focus.
+
+The overlay itself never takes the keyboard (`WlrKeyboardFocus.None`). With
+an exclusive layer Hyprland sends every pointer event to that layer, wherever
+the pointer is, so on two monitors the second one's overview could not be
+hovered or clicked. A config reload keeps Hyprland in the submap but starts the Lua afresh,
 so the load and every way out also check `hl.get_current_submap()`.
 
 ### Things that change while it is up
