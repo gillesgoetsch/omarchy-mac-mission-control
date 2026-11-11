@@ -351,7 +351,15 @@ mac_mission_control = {
   -- A window dragged onto a desktop: it leaves the overview, so it is shown
   -- again, and it goes in front of what is there already.
   move = function(address, id)
-    hl.dispatch(hl.dsp.window.tag({ tag = "-" .. HIDDEN_TAG, window = sel(address) }))
+    -- Onto the desktop in view on a monitor whose overview is up (another
+    -- monitor's): there the copy stands in for it, so it stays hidden.
+    local in_view = false
+    for _, m in ipairs(hl.get_monitors() or {}) do
+      if up[m.name] and m.active_workspace and m.active_workspace.id == id then in_view = true end
+    end
+    if not in_view then
+      hl.dispatch(hl.dsp.window.tag({ tag = "-" .. HIDDEN_TAG, window = sel(address) }))
+    end
     hl.dispatch(hl.dsp.window.move({ workspace = tostring(id), follow = false, window = sel(address) }))
     hl.dispatch(hl.dsp.window.alter_zorder({ mode = "top", window = sel(address) }))
   end,

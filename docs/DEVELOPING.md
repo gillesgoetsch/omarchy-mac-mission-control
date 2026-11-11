@@ -159,6 +159,22 @@ the pointer is, so on two monitors the second one's overview could not be
 hovered or clicked. A config reload keeps Hyprland in the submap but starts the Lua afresh,
 so the load and every way out also check `hl.get_current_submap()`.
 
+### Windows across monitors
+
+Each monitor's overlay is its own surface, and a copy can only be drawn on the
+one it lives in. So every overlay has a copy of every window (`panelLists`:
+its own windows first, then the others'), and a copy is shown only on the
+monitor its desktop belongs to now (`monitorOf()`: the monitor whose `spaces`
+hold its `wsOf`). Copies that are not shown capture nothing.
+
+A drag stays with the overlay it started on (the pointer is grabbed while the
+button is down), so past its edge the point is in that overlay's coordinates.
+`dropTarget()` turns it into a global point and asks the overlay of the monitor
+under it for the desktop there (`panelOf`). Dropped onto another monitor's
+desktop, the copy in hand goes, `moveWindow()` updates `wsOf`, and that
+monitor's copy takes over. The Lua's `move()` keeps the real window hidden when
+its new desktop is the one in view under an overlay.
+
 ### Things that change while it is up
 
 The model (`byMonitor`) is built once per opening; replacing it would recreate

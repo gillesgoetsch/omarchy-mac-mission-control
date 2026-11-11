@@ -39,7 +39,8 @@ arrives spread out as well. A click on a preview opens that desktop.
 ### Move a window to another desktop
 
 Drag it onto a preview. It shrinks as it nears the bar, flies into place and
-ends up in front of what is there. Drop it on `+` for a new desktop.
+ends up in front of what is there. Drop it on `+` for a new desktop. With
+several monitors, the previews of the other monitors take it too.
 
 ![Dragging a window onto another desktop](docs/media/move.gif)
 

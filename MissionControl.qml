@@ -64,6 +64,12 @@ Item {
                         titlebar: "#3c3836", title: "#d4be98", shadowRange: 16, shadowPower: 3, shadow: "#35000000" })
   property var monitors: ({})        // name -> { x, y, w, h, top, bottom, left, right, activeWs, offset, focused }
   property var byMonitor: ({})       // name -> [window] of every desktop, stacking order
+  // name -> its own windows, then every other monitor's: each monitor's overview
+  // has a copy of every window and draws the ones whose desktop is its own, so
+  // a window dropped on another monitor's desktop shows up there.
+  property var panelLists: ({})
+  property var panelOf: ({})         // screen name -> its PanelWindow, for drops across monitors
+  property string dropMonitor: ""    // monitor of the desktop under a dragged window
   property var spaces: ({})          // name -> [workspace id]
   property var wsOf: ({})            // address -> workspace id (changes when a window is dragged to a desktop)
   property var gone: ({})            // address -> true: closed while the overview is up
@@ -315,6 +321,13 @@ Item {
     if (snap.deco) root.deco = snap.deco
     root.monitors = snap.mons
     root.byMonitor = byMonitor
+    var panelLists = {}
+    for (name in byMonitor) {
+      var all = byMonitor[name].slice()
+      for (var other in byMonitor) if (other !== name) all = all.concat(byMonitor[other])
+      panelLists[name] = all
+    }
+    root.panelLists = panelLists
     root.spaces = spaces
     root.wsOf = wsOf
     root.needed = needed
@@ -325,6 +338,7 @@ Item {
     root.dragging = false
     root.lifted = ""
     root.dropSpace = -1
+    root.dropMonitor = ""
     root.fadeMonitor = ""
     root.fade = 1
     root.pageMonitor = ""
@@ -377,10 +391,10 @@ Item {
     for (var name in root.monitors) {
       var mon = root.monitors[name]
       var groups = {}
-      var list = root.byMonitor[name] || []
+      var list = root.panelLists[name] || []
       for (var i = 0; i < list.length; i++) {
         var w = list[i]
-        if (root.gone[w.address]) continue
+        if (root.gone[w.address] || root.monitorOf(w) !== name) continue
         var ws = w.pinned ? mon.activeWs : root.wsOf[w.address]
         if (!groups[ws]) groups[ws] = { shown: [], frames: [] }
         groups[ws].shown.push(w)
@@ -482,6 +496,7 @@ Item {
     root.dragging = false
     root.lifted = ""
     root.dropSpace = -1
+    root.dropMonitor = ""
     root.hoverAddress = ""
     root.fadeMonitor = ""
     root.fade = 1
@@ -490,6 +505,7 @@ Item {
     root.reorderFrom = -1
     geoSoon.stop(); geoLater.stop()
     root.byMonitor = ({})
+    root.panelLists = ({})
     root.geo = ({})
     root.slots = ({})
     root.needed = ({})
@@ -633,6 +649,29 @@ Item {
 
   function spaceIndex(monitorName, id) {
     return (root.spaces[monitorName] || []).indexOf(id)
+  }
+
+  // The monitor a window is on now: the one its desktop belongs to (it may
+  // have been dropped on another monitor's desktop since the snapshot).
+  function monitorOf(w) {
+    if (w.pinned) return w.mon
+    var ws = root.wsOf[w.address]
+    for (var name in root.spaces) if (root.spaces[name].indexOf(ws) >= 0) return name
+    return w.mon
+  }
+
+  // The monitor and desktop under a point of a panel's stage, on any monitor:
+  // while the button is held the pointer stays with the panel it was pressed
+  // on, so past its edge the point is in that panel's coordinates.
+  function dropTarget(fromMon, px, py) {
+    var gx = fromMon.x + px, gy = fromMon.y + py
+    for (var name in root.monitors) {
+      var m = root.monitors[name]
+      if (gx < m.x || gx >= m.x + m.w || gy < m.y || gy >= m.y + m.h) continue
+      var target = root.panelOf[name]
+      return { monitor: name, id: target ? target.spaceAt(gx - m.x, gy - m.y) : -1 }
+    }
+    return { monitor: fromMon.name, id: -1 }
   }
 
   function setActive(monitorName, id) {
@@ -920,7 +959,7 @@ Item {
                             spaces: root.spaces, slots: root.slots })
   }
 
-  signal debugDrop(string address, int id)
+  signal debugDrop(string address, int id, string monitorName)
 
   // For tests, what the pointer would do:
   //   omarchy-shell shell call mac.missioncontrol debugAction "space Virtual-1 2"
@@ -931,7 +970,7 @@ Item {
     else if (a[0] === "activate") root.activate(a[1])
     else if (a[0] === "move") root.moveWindow(a[1], a[2], Number(a[3]))
     else if (a[0] === "hover") root.hoverAddress = a[1]   // the pointer on a window
-    else if (a[0] === "drop") root.debugDrop(a[1], Number(a[2]))   // a window let go over a desktop (0: over nothing)
+    else if (a[0] === "drop") root.debugDrop(a[1], Number(a[2]), a[3] || "")   // a window let go over a desktop (0: over nothing), optionally of another monitor
     else if (a[0] === "reorder") root.reorderSpace(a[1], Number(a[2]), Number(a[3]))   // positions in the bar, from 0
     else if (a[0] === "page") {   // "page Virtual-1 1": a swipe to the next desktop (-1: previous)
       var now = Date.now()
@@ -953,7 +992,10 @@ Item {
       required property var modelData
       readonly property var mon: root.monitors[modelData.name] || null
       readonly property var area: mon ? root.areaOf(mon) : ({ x: 0, y: 0, w: 1, h: 1 })
-      readonly property var list: mon ? (root.byMonitor[mon.name] || []) : []
+      readonly property var list: mon ? (root.panelLists[mon.name] || []) : []
+      function spaceAt(x, y) { return bar.spaceAt(x, y) }
+      Component.onCompleted: root.panelOf[modelData.name] = panel
+      Component.onDestruction: if (root.panelOf[modelData.name] === panel) delete root.panelOf[modelData.name]
       readonly property real shown: Math.min(1, root.progress)
       // Where this monitor is among its desktops: on the one in view, or between two while they slide.
       readonly property int home: mon ? Math.max(0, root.spaceIndex(mon.name, mon.activeWs)) : 0
@@ -1012,11 +1054,13 @@ Item {
               // Where the window is and how large: as snapshotted, or as Hyprland
               // has it since (a window moved to another desktop re-tiles the rest).
               readonly property var g: root.geo[modelData.address] || modelData
-              readonly property bool here: (root.wsOf[address] === panel.mon.activeWs || modelData.pinned)
+              // On this monitor's desktops (every overview has a copy of every window).
+              readonly property bool mine: root.monitorOf(modelData) === panel.mon.name
+              readonly property bool here: mine && (root.wsOf[address] === panel.mon.activeWs || modelData.pinned)
               // Its desktop's place among the monitor's, and how far that is from the view.
-              readonly property int pageIndex: root.spaceIndex(panel.mon.name, root.wsOf[address])
+              readonly property int pageIndex: mine ? root.spaceIndex(panel.mon.name, root.wsOf[address]) : -1
               readonly property real pageOffset: modelData.pinned || pageIndex < 0 ? 0 : (pageIndex - panel.pagePos) * panel.mon.w
-              readonly property bool onStage: modelData.pinned
+              readonly property bool onStage: (modelData.pinned && mine)
                                               || (pageIndex >= 0 && Math.abs(pageIndex - panel.pagePos) < 0.999 && (here || root.hiddenAck))
               // The neighbouring desktops' windows are captured ahead, for the swipe.
               readonly property bool wanted: here || (root.hiddenAck && pageIndex >= 0 && Math.abs(pageIndex - panel.home) <= 1)
@@ -1073,10 +1117,17 @@ Item {
                 return (ts * 0.82 + (mini - ts * 0.82) * near) / ts
               }
 
-              function release(id) {
+              function release(id, monitorName) {
                 thumb.dragged = false
                 root.dragging = false
                 root.dropSpace = -1
+                root.dropMonitor = ""
+                // Onto another monitor's desktop: this copy goes, that monitor's takes over.
+                if (id > 0 && monitorName && monitorName !== panel.mon.name) {
+                  thumb.land()
+                  root.moveWindow(address, monitorName, id)
+                  return
+                }
                 var spot = id > 0 && id !== root.wsOf[address]
                            ? bar.landing(id, { x: fx, y: fy, w: width, h: height }) : null
                 if (spot) {
@@ -1092,8 +1143,8 @@ Item {
               // For tests: taken up by its middle, carried half way to the bar, let go.
               Connections {
                 target: root
-                function onDebugDrop(address, id) {
-                  if (address !== thumb.address || !root.interactive) return
+                function onDebugDrop(address, id, monitorName) {
+                  if (address !== thumb.address || !thumb.mine || !root.interactive) return
                   thumb.gx = thumb.width / 2
                   thumb.gy = thumb.height / 2
                   thumb.px = thumb.x + thumb.gx * thumb.ts
@@ -1104,7 +1155,7 @@ Item {
                   root.dragging = true
                   root.lifted = thumb.address
                   thumb.factor = thumb.factorAt(thumb.py)
-                  thumb.release(id)
+                  thumb.release(id, monitorName || panel.mon.name)
                 }
               }
 
@@ -1273,12 +1324,15 @@ Item {
                   thumb.px = p.x
                   thumb.py = p.y
                   thumb.factor = thumb.factorAt(p.y)
-                  root.dropSpace = bar.spaceAt(p.x, p.y)
+                  var drop = root.dropTarget(panel.mon, p.x, p.y)
+                  root.dropSpace = drop.id
+                  root.dropMonitor = drop.monitor
                 }
                 onReleased: (mouse) => {
                   if (!thumb.dragged) return
                   var p = mapToItem(stage, mouse.x, mouse.y)
-                  thumb.release(bar.spaceAt(p.x, p.y))
+                  var drop = root.dropTarget(panel.mon, p.x, p.y)
+                  thumb.release(drop.id, drop.monitor)
                 }
                 onCanceled: if (thumb.dragged) thumb.release(-1)
                 onClicked: if (!moved) root.activate(thumb.address)
@@ -1297,6 +1351,7 @@ Item {
               readonly property var slot: root.slots[modelData.address] || null
               readonly property bool hovered: slot !== null && root.interactive && !root.dragging
                                               && root.hoverAddress === modelData.address
+                                              && root.monitorOf(modelData) === panel.mon.name
               readonly property real frameW: (g.w + 2 * root.deco.border) * (slot ? slot.s : 1)
               readonly property real frameH: (g.h + (g.bar ? root.deco.bar : 0) + 2 * root.deco.border) * (slot ? slot.s : 1)
               visible: opacity > 0
@@ -1468,6 +1523,7 @@ Item {
                 readonly property int target: isNew ? bar.fresh : modelData
                 readonly property bool current: !isNew && panel.mon !== null && modelData === panel.mon.activeWs
                 readonly property bool dropHere: root.dragging && root.dropSpace === target
+                                                 && panel.mon !== null && root.dropMonitor === panel.mon.name
                 width: isNew ? Math.round(bar.previewH * 0.55) : bar.previewW
                 height: bar.full - bar.inset - 12
 
