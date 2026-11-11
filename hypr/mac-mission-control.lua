@@ -69,6 +69,17 @@ end
 
 local function sel(address) return "address:" .. address end
 
+-- Focusing a window or a workspace warps the pointer unless cursor.no_warps is
+-- on. The overview's choices must leave the pointer where it is (macOS does),
+-- so warping is off for those dispatches, and the user's setting comes back.
+local function no_warp(fn)
+  local ok, previous = pcall(hl.get_config, "cursor.no_warps")
+  hl.config({ cursor = { no_warps = true } })
+  local done, err = pcall(fn)
+  hl.config({ cursor = { no_warps = ok and previous == true } })
+  if not done then error(err, 0) end
+end
+
 -- A hidden helper output (OmacVM's NOTCH) or a mirror is not a screen; in demo
 -- mode only the one monitor is.
 local function real(monitor)
@@ -323,8 +334,10 @@ mac_mission_control = {
 
   -- Switch to a window: focus it and bring it to the front.
   activate = function(address)
-    hl.dispatch(hl.dsp.focus({ window = sel(address) }))
-    hl.dispatch(hl.dsp.window.bring_to_top())
+    no_warp(function()
+      hl.dispatch(hl.dsp.focus({ window = sel(address) }))
+      hl.dispatch(hl.dsp.window.bring_to_top())
+    end)
   end,
 
   -- Go to a desktop (by workspace id) while the overview stays up: its windows
@@ -341,7 +354,7 @@ mac_mission_control = {
     end
     switching = true
     if type(slide) == "table" then hl.animation({ leaf = "workspaces", enabled = false }) end
-    hl.dispatch(hl.dsp.focus({ workspace = tostring(id) }))
+    no_warp(function() hl.dispatch(hl.dsp.focus({ workspace = tostring(id) })) end)
     hl.timer(function()
       switching = false
       if type(slide) == "table" then hl.animation(slide) end
@@ -564,7 +577,7 @@ mac_mission_control.handlers = {
   key = function(which) emit("key," .. which) end,
   -- SUPER + 1..0 in the overview: that desktop of the monitor, and the overview goes along.
   desktop = function(n)
-    hl.dispatch(hl.dsp.focus({ workspace = tostring(n + block(hl.get_active_monitor())) }))
+    no_warp(function() hl.dispatch(hl.dsp.focus({ workspace = tostring(n + block(hl.get_active_monitor())) })) end)
   end,
 }
 
