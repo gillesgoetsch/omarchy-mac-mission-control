@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.4 (2026-11-11)
+
+- With several monitors, a window can be dragged onto a desktop of another
+  monitor. Every monitor's overview now has a copy of every window and shows
+  the ones whose desktop is on it, so the window turns up there at once; the
+  real window stays hidden while that desktop is in view under the overview.
+
 ## 1.0.3 (2026-11-11)
 
 - With several monitors, the overview on every monitor takes the pointer: its
