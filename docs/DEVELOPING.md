@@ -12,7 +12,7 @@ it straight into `~/.config/omarchy/plugins/mac.missioncontrol/`.
 | `Layout.js` | where each window goes (pure functions, tested with node) |
 | `hypr/mac-mission-control.lua` | the Hyprland half: gesture, keys, snapshot, hiding the real windows |
 | `shaders/shadow.frag` → `shadow.frag.qsb` | Hyprland's window shadow, for the copies |
-| `tests/` | `check.sh` (never opens the overview), `layout.test.js` |
+| `tests/` | `check.sh` (never opens the overview), `layout.test.js`, `submap.test.lua` |
 | `scripts/dev-install.sh` | copy the working tree to the plugin folder and restart the shell |
 | `docs/demo/` | stand-in pages used for the screenshots |
 
@@ -150,7 +150,8 @@ first `layer.opened` and leaves it with the last `layer.closed`: in it those
 keys (and their `CTRL` twins) send `key,q` / `key,w`, the shell answers with
 `quit(address)` / `close(address)` for the window under the pointer, and the
 toggle keys and `SUPER + 1..0` are bound again. Unbound keys reach the overlay
-(`ESC`).
+(`ESC`). A config reload keeps Hyprland in the submap but starts the Lua afresh,
+so the load and every way out also check `hl.get_current_submap()`.
 
 ### Things that change while it is up
 

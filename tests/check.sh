@@ -19,6 +19,13 @@ if [ -x /usr/lib/qt6/bin/qsb ] || [ -n "${CHECK_SHADER:-}" ]; then
   [ "$REPO/shadow.frag.qsb" -nt "$REPO/shaders/shadow.frag" ] || [ "$(git -C "$REPO" log -1 --format=%ct -- shadow.frag.qsb 2>/dev/null || echo 1)" -ge "$(git -C "$REPO" log -1 --format=%ct -- shaders/shadow.frag 2>/dev/null || echo 0)" ] \
     && ok "shadow shader is built" || bad "shadow shader older than its source (scripts/build-shader.sh)"
 fi
+lua="$(command -v lua5.4 || command -v lua || true)"
+if [ -n "$lua" ]; then
+  t="$(mktemp -d)"
+  HOME="$t" XDG_RUNTIME_DIR="" "$lua" "$REPO/tests/submap.test.lua" | sed 's/^/      /'
+  s="${PIPESTATUS[0]}"; rm -rf "$t"
+  [ "$s" -eq 0 ] && ok "submap: entered and left, also after a config reload" || bad "submap"
+else echo "skip  submap (no lua)"; fi
 node="$(mise which node 2>/dev/null || command -v node)"
 if [ -n "$node" ]; then "$node" "$REPO/tests/layout.test.js" | sed 's/^/      /'; [ "${PIPESTATUS[0]}" -eq 0 ] && ok "layout: no overlaps, inside the area" || bad "layout"; else echo "skip  layout (no node)"; fi
 

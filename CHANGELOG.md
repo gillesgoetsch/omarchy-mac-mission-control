@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2 (2026-11-11)
+
+- A Hyprland config reload while the overview is open no longer leaves
+  Hyprland in the overview's submap, where most keys did nothing until the
+  next open and close.
+
 ## 1.0.1 (2026-11-10)
 
 - Swiping the overview shut with the pointer on a window brings that window
