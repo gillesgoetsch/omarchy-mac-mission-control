@@ -1067,6 +1067,13 @@ Item {
               readonly property bool full: modelData.fullscreen === 2
               readonly property real barHeight: g.bar && !full ? root.deco.bar : 0
               readonly property real border: full ? 0 : root.deco.border
+              // Rounded as Hyprland rounds the window (decoration.rounding): the
+              // window itself at that radius and its border around it, in the
+              // window's own pixels, so the copy is the window scaled down and
+              // matches it exactly at full size. The copy itself has square corners
+              // (Hyprland rounds while drawing, not in the window's picture).
+              readonly property real innerCorner: full ? 0 : root.deco.rounding
+              readonly property real corner: innerCorner > 0 ? innerCorner + border : 0
               readonly property real fx: g.x - panel.mon.x - border
               readonly property real fy: g.y - panel.mon.y - barHeight - border
               readonly property var slot: root.slots[address] || null
@@ -1207,6 +1214,7 @@ Item {
                 color: "transparent"
                 border.width: thumb.border
                 border.color: thumb.isActive ? root.deco.activeBorder : root.deco.inactiveBorder
+                radius: thumb.corner
               }
 
               // Until the copy has a frame.
@@ -1217,11 +1225,17 @@ Item {
                 height: thumb.g.h
                 color: Commons.Color.background
                 visible: !view.hasContent && root.hiddenAck
+                topLeftRadius: thumb.barHeight > 0 ? 0 : thumb.innerCorner
+                topRightRadius: thumb.barHeight > 0 ? 0 : thumb.innerCorner
+                bottomLeftRadius: thumb.innerCorner
+                bottomRightRadius: thumb.innerCorner
               }
 
               // Titlebar, as omarchy-hyprland-titlebars draws it.
               Rectangle {
                 visible: thumb.barHeight > 0 && thumb.solid
+                topLeftRadius: thumb.innerCorner
+                topRightRadius: thumb.innerCorner
                 x: thumb.border
                 y: thumb.border
                 width: thumb.g.w
@@ -1270,6 +1284,31 @@ Item {
                 live: root.liveThumbnails && thumb.onStage
                 onHasContentChanged: if (hasContent) root.ready(thumb.address)
                 Component.onCompleted: if (hasContent) root.ready(thumb.address)
+                layer.enabled: thumb.innerCorner > 0
+                layer.smooth: true
+                layer.effect: MultiEffect {
+                  maskEnabled: true
+                  maskSource: viewMask
+                  maskThresholdMin: 0.5
+                  maskSpreadAtMin: 1.0
+                }
+              }
+              // The copy's shape: its corners rounded (the top ones by the titlebar
+              // when it has one).
+              Item {
+                id: viewMask
+                width: view.width
+                height: view.height
+                visible: false
+                layer.enabled: true
+                Rectangle {
+                  anchors.fill: parent
+                  antialiasing: true
+                  topLeftRadius: thumb.barHeight > 0 ? 0 : thumb.innerCorner
+                  topRightRadius: thumb.barHeight > 0 ? 0 : thumb.innerCorner
+                  bottomLeftRadius: thumb.innerCorner
+                  bottomRightRadius: thumb.innerCorner
+                }
               }
 
               // Pointer over a window: a ring in the accent color.
@@ -1281,7 +1320,7 @@ Item {
                 color: "transparent"
                 border.color: Commons.Color.accent
                 border.width: t
-                radius: root.deco.rounding / Math.max(0.05, thumb.scale)   // as the windows: square unless Hyprland rounds them
+                radius: thumb.corner > 0 ? thumb.corner + t : 0   // around the window's own corners
               }
 
               MouseArea {
@@ -1532,7 +1571,9 @@ Item {
                   id: preview
                   width: entry.width
                   height: bar.previewH
-                  radius: 0   // a desktop is a screen: square corners
+                  // Rounded as the windows are, at half their radius (on screen): at
+                  // full rounding a preview this small reads as a pill.
+                  radius: Math.min(root.deco.rounding / 2, height / 4)
                   color: entry.isNew ? Util.alpha(Commons.Color.foreground, entryMouse.containsMouse || entry.dropHere ? 0.22 : 0.1) : "#101010"
                   scale: entry.dropHere ? 1.06 : 1
                   Behavior on scale { NumberAnimation { duration: Style.duration(120); easing.type: Easing.OutCubic } }
@@ -1544,6 +1585,26 @@ Item {
                       id: mini
                       readonly property real k: width / panel.mon.w
                       clip: true
+                      // Wallpaper and windows inside the preview's rounded corners.
+                      layer.enabled: preview.radius > 0
+                      layer.smooth: true
+                      layer.effect: MultiEffect {
+                        maskEnabled: true
+                        maskSource: miniMask
+                        maskThresholdMin: 0.5
+                        maskSpreadAtMin: 1.0
+                      }
+                      Item {
+                        id: miniMask
+                        anchors.fill: parent
+                        visible: false
+                        layer.enabled: true
+                        Rectangle {
+                          anchors.fill: parent
+                          antialiasing: true
+                          radius: preview.radius
+                        }
+                      }
                       Image {
                         anchors.fill: parent
                         source: root.wallpaper
@@ -1595,7 +1656,7 @@ Item {
                   Rectangle {
                     anchors.fill: parent
                     anchors.margins: -3
-                    radius: 0
+                    radius: preview.radius > 0 ? preview.radius + 3 : 0
                     color: "transparent"
                     visible: !entry.isNew && (entry.current || entryMouse.containsMouse || entry.dropHere)
                     border.width: 2
