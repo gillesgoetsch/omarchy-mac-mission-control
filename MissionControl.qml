@@ -1563,7 +1563,7 @@ Item {
                 readonly property bool current: !isNew && panel.mon !== null && modelData === panel.mon.activeWs
                 readonly property bool dropHere: root.dragging && root.dropSpace === target
                                                  && panel.mon !== null && root.dropMonitor === panel.mon.name
-                width: isNew ? Math.round(bar.previewH * 0.55) : bar.previewW
+                width: bar.previewW   // the "+" tile as large as a desktop's preview
                 height: bar.full - bar.inset - 12
 
                 // The desktop in miniature: wallpaper and its windows where they are.
